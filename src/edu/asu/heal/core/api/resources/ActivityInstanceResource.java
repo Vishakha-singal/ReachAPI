@@ -6,8 +6,6 @@ import edu.asu.heal.core.api.responses.HEALResponse;
 import edu.asu.heal.core.api.responses.HEALResponseBuilder;
 import edu.asu.heal.core.api.service.HealService;
 import edu.asu.heal.core.api.service.HealServiceFactory;
-import edu.asu.heal.reachv3.api.models.MakeBelieveActivityInstance;
-import edu.asu.heal.reachv3.api.service.ReachService;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -15,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Path("/activityinstances/")
@@ -305,15 +302,15 @@ public class ActivityInstanceResource {
 
 		ActivityInstance removed = reachService.deleteActivityInstance(activityInstanceId);
 
-		if (removed.equals(NullObjects.getNullActivityInstance())) {
-			response = builder
-					.setStatusCode(Response.Status.NOT_FOUND.getStatusCode())
-					.setData("ACTIVITY INSTANCE DOES NOT EXIST")
-					.build();
-		} else if (removed == null) {
+		 if (removed == null) {
 			response = builder
 					.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
 					.setData("SOME PROBLEM IN DELETING ACTIVITY INSTANCE. CONTACT ADMINISTRATOR")
+					.build();
+		}else if (removed.equals(NullObjects.getNullActivityInstance())) {
+			response = builder
+					.setStatusCode(Response.Status.NOT_FOUND.getStatusCode())
+					.setData("ACTIVITY INSTANCE DOES NOT EXIST")
 					.build();
 		} else {
 			response = builder

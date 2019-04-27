@@ -17,10 +17,6 @@ public class ServerExceptionLogger {
 		try {
 			__dao = DAOFactory.getTheDAO();
 		} catch (Exception e) {
-			int lineNumber = e.getStackTrace()[0].getLineNumber(); 
-			String classOfException = e.toString();
-			String nameOfClass = this.getClass().getSimpleName();
-			String nameOfMethod = e.getStackTrace()[0].getMethodName();
 			e.printStackTrace();
 		//	setServerExceptions(lineNumber, classOfException, nameOfClass, nameOfMethod, -1);		
 		}

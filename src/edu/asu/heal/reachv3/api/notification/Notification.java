@@ -58,20 +58,13 @@ public class Notification {
 //						"QUbGqM7tK0YU_YOUUO0X2lpJmMSmVkxZC6JPFkFeC6TimZFg0BsXsutnVhsGM-Ydp2ZFCVswMMnhHrzKbMZpTwKDyZU2XllSZn");
 //				
 				postRequest.addHeader("Authorization", serverKey);
-			
 				postRequest.setEntity(input);
-
-				System.out.println("reques:" + notificationJson);
-
 				HttpResponse response = httpClient.execute(postRequest);
 				if (response.getStatusLine().getStatusCode() != 200) {
-					System.out.println("Unsuccessful");
 					throw new RuntimeException("Failed : HTTP error code : "
 							+ response.getStatusLine().getStatusCode());
 				} else if (response.getStatusLine().getStatusCode() == 200) {
-					System.out.println("Successful");
 					System.out.println("response:" + EntityUtils.toString(response.getEntity()));
-
 				}
 			}
 			return true;
@@ -81,6 +74,9 @@ public class Notification {
 		} catch (Exception exception) {
 			exception.printStackTrace();
 			return false;
+		}
+		finally {
+			
 		}
 	}
 

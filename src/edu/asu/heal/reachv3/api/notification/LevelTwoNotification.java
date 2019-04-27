@@ -99,6 +99,8 @@ public class LevelTwoNotification implements INotificationInterface{
 				line = br.readLine();
 			}
 			result = sb.toString();
+			br.close();
+			is.close();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

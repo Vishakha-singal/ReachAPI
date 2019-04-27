@@ -22,7 +22,7 @@ public class NotificationData implements IHealModelType {
   
 
 	private static ArrayList<Integer> values = new ArrayList<Integer>();
-    private static int MAX_VAL = Integer.MAX_VALUE; // this number can be configurable .
+    private static int MAX_VAL = 10000000; // this number can be configurable .
     private static int index = 0;
     
     public NotificationData() {

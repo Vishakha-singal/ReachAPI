@@ -32,11 +32,12 @@ public class SchedulerMain implements ServletContextListener {
 		int currHour = cal.get(Calendar.HOUR_OF_DAY);
 		int min = cal.get(Calendar.MINUTE);
 		// Currently runs from 6 am to 11 pm , hourly basis.
-		if(currHour >=6 && currHour <=23) {
+		//if(currHour >=6 && currHour <=23) 
+		if(true){
 			long delay =0;
-			if(min >1) {
-				delay= 60-min;
-			}
+//			if(min >1) {
+//				delay= 60-min;
+//			}
 			service.scheduleAtFixedRate(new HourlyScheduledTask(), delay , 60 , TimeUnit.MINUTES);
 		}
 		service.scheduleAtFixedRate(new MidnightScheduledTask(), getTomorrowMorning1230am(),oneDayInMiliSec , TimeUnit.MILLISECONDS);

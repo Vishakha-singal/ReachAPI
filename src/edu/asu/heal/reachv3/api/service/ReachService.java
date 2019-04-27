@@ -18,7 +18,6 @@ import org.apache.http.ParseException;
 import edu.asu.heal.core.api.dao.DAO;
 import edu.asu.heal.core.api.dao.DAOFactory;
 import edu.asu.heal.core.api.models.*;
-import edu.asu.heal.core.api.responses.HEALResponse;
 import edu.asu.heal.core.api.service.HealService;
 import edu.asu.heal.core.api.service.SuggestedActivityiesMappingService.MappingFactory;
 import edu.asu.heal.core.api.service.SuggestedActivityiesMappingService.MappingInterface;
@@ -34,16 +33,10 @@ import java.util.concurrent.TimeUnit;
 public class ReachService implements HealService {
 
 	private static final String DATE_FORMAT = "MM/dd/yyyy";
-	private static String days;
 	private static String TRIAL_NAME="Compass";
 	private static String MODULE="module";
 	private static String DAY="day";
 	private static String MODULE_LENGTH="moduleLength";
-	private static String UI_L1_MIN = "level_1.minValDivisor";
-	private static String UI_L1_MAX = "level_1.maxValSubtrahend";
-	private static String UI_L2_MIN = "level_2.minValSubtrahend";
-	private static String UI_L2_MAX = "level_2.maxValSubtrahend";
-	private static String BLOB_TRICKS_DAYS = "blobTricks.day.list";
 	private static String SKILL_WH_L1_MIN = "WorryHeads.skill_level_1_min";
 	private static String SKILL_WH_L1_MAX = "WorryHeads.skill_level_1_max";
 	private static String SKILL_WH_L2_MIN = "WorryHeads.skill_level_2_min";
@@ -72,7 +65,6 @@ public class ReachService implements HealService {
 			InputStream propFile = ReachService.class.getResourceAsStream("notificationRule.properties");
 			_properties.load(propFile);
 			propFile.close();
-			days = _properties.getProperty(BLOB_TRICKS_DAYS);
 		} catch (Exception e) {
 			ServerExceptionLogger exceptionLogger = new ServerExceptionLogger();
 			int lineNumber = e.getStackTrace()[0].getLineNumber(); 
@@ -101,7 +93,7 @@ public class ReachService implements HealService {
 			String nameOfMethod = e.getStackTrace()[0].getMethodName();
 			exceptionLogger.logServerException(lineNumber, classOfException, nameOfClass,
 					nameOfMethod, -1,INTERNAL_ERROR_CODE);
-
+			
 			return null;
 		}
 	}
@@ -202,7 +194,6 @@ public class ReachService implements HealService {
 	/****************************************  Service methods for ActivityInstance  **********************************/
 	@Override
 	public List<ActivityInstance> getActivityInstances(int patientPin) {
-		List<ActivityInstance> response = null;
 		try {
 			DAO dao = DAOFactory.getTheDAO();
 			List<ActivityInstance> instances = dao.getScheduledActivities(patientPin);
@@ -246,9 +237,9 @@ public class ReachService implements HealService {
 			HashMap<String, Integer> modules = getModuleAndDay(patientSchedule, new Date());
 			Integer module =-1;
 
-			if (modules != null && modules.size() > 0 && modules.containsKey(this.MODULE)
-					&& modules.get(this.MODULE) != null) {
-				module = modules.get(this.MODULE);
+			if (modules != null && modules.size() > 0 && modules.containsKey(MODULE)
+					&& modules.get(MODULE) != null) {
+				module = modules.get(MODULE);
 				sessionId = patientSchedule.getSchedule().get(module).getModule();
 			}
 			List<String> results = dao.getEmotionsActivityInstance(emotion.toLowerCase(), intensityVal, sessionId);
@@ -265,6 +256,7 @@ public class ReachService implements HealService {
 			generator.close();
 			String emotionsActivities = writer.toString();
 			writer.close();
+			
 			return emotionsActivities;
 
 		} catch (Exception e) {
@@ -403,19 +395,18 @@ public class ReachService implements HealService {
 				// Code to add AI in patient schedule
 				String activityInstanceId = newActivityInstance.getActivityInstanceId();
 				Integer patientPin = newActivityInstance.getPatientPin();
-
-				if (dao.getSchedule(patientPin) != null) {
-					PatientScheduleJSON patientSchedule = dao.getSchedule(patientPin);
+				PatientScheduleJSON patientSchedule = dao.getSchedule(patientPin);
+				if (patientSchedule != null) {
 					Date today = new Date();
 					HashMap<String, Integer> map = getModuleAndDay(patientSchedule, today);
 					Integer module =-1, dayOfModule =-1, moduleLen =-1;
 					if(map != null && map.size() > 0) {
-						if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-							module = map.get(this.MODULE);
-						if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-							dayOfModule=map.get(this.DAY);
-						if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-							moduleLen = map.get(this.MODULE_LENGTH);
+						if (map.containsKey(MODULE) && map.get(MODULE) != null)
+							module = map.get(MODULE);
+						if (map.containsKey(DAY) && map.get(DAY) != null)
+							dayOfModule=map.get(DAY);
+						if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+							moduleLen = map.get(MODULE_LENGTH);
 					}
 					if(module != -1 && patientSchedule != null
 							&& patientSchedule.getSchedule() != null
@@ -439,8 +430,12 @@ public class ReachService implements HealService {
 					}else {
 						// do nothing
 					}
+					map=null;
 				} else {
 				}
+				mapCount = null;
+				
+				
 			} catch (Exception e) {
 
 				ServerExceptionLogger exceptionLogger = new ServerExceptionLogger();
@@ -563,10 +558,10 @@ public class ReachService implements HealService {
 					int module = -1;
 					int days = -1;
 					if (modules != null && modules.size() > 0) {
-						if (modules.containsKey(this.MODULE) && modules.get(this.MODULE) != null)
-							module = modules.get(this.MODULE);
-						if (modules.containsKey(this.DAY) && modules.get(this.DAY) != null)
-							days = modules.get(this.DAY);
+						if (modules.containsKey(MODULE) && modules.get(MODULE) != null)
+							module = modules.get(MODULE);
+						if (modules.containsKey(DAY) && modules.get(DAY) != null)
+							days = modules.get(DAY);
 					}
 
 					if (module != -1 && patientSchedule != null
@@ -589,7 +584,7 @@ public class ReachService implements HealService {
 					}
 
 					//patientSchedule.getSchedule().get(0).getSchedule().get(0).getActivitySchedule().get(0).getScore();
-
+					modules = null;
 				}
 
 				//
@@ -842,7 +837,6 @@ public class ReachService implements HealService {
 
 	@Override
 	public List<Trial> getTrials(String domain) {
-		HEALResponse response = null;
 		try {
 			DAO dao = DAOFactory.getTheDAO();
 			List<Trial> trials = null;
@@ -1006,12 +1000,12 @@ public class ReachService implements HealService {
 			HashMap<String, Integer> map = this.getModuleAndDay(patientScheduleJSON,today);
 
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 			}
 			if(module ==-1) {
 				rval = false;// No module selected so no trials for this patient pin
@@ -1531,13 +1525,13 @@ public class ReachService implements HealService {
 
 				today = getDateWithoutTime(today);
 				if(today.compareTo(startDate) >= 0 && today.compareTo(endDate) <=0) {
-					rval.put(this.MODULE, Integer.valueOf(moduleJson.get(i).getModule())-1);
+					rval.put(MODULE, Integer.valueOf(moduleJson.get(i).getModule())-1);
 					long diffTime = today.getTime() - startDate.getTime();
 					Long d = TimeUnit.DAYS.convert(diffTime, TimeUnit.MILLISECONDS);
-					rval.put(this.DAY,d.intValue());
+					rval.put(DAY,d.intValue());
 					Long moduleLen =TimeUnit.DAYS.convert(endDate.getTime() -
 							startDate.getTime(),TimeUnit.MILLISECONDS)+1;
-					rval.put(this.MODULE_LENGTH, moduleLen.intValue());
+					rval.put(MODULE_LENGTH, moduleLen.intValue());
 					break;
 				}
 
@@ -1581,7 +1575,6 @@ public class ReachService implements HealService {
 		try {
 			Date today = new Date();
 			SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
-			String day = sdf.format(today);
 			DAO dao = DAOFactory.getTheDAO();
 			int currVal = dao.getReleasedBlobTricksDAO(patientPin).getCount();
 			return currVal;
@@ -1653,19 +1646,17 @@ public class ReachService implements HealService {
 			Integer moduleLen = 0;
 
 			Date today = new Date();//new SimpleDateFormat(ReachService.DATE_FORMAT).parse(.toString());
-			DateFormat dateFormat = new SimpleDateFormat("HH");
-			Integer currHour = Integer.valueOf(dateFormat.format(today));
 
 			// create method  to get module and day of module - done
 			HashMap<String, Integer> map = this.getModuleAndDay(patientScheduleJSON, today);
 
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 			}
 			if (module == -1) {
 				// No module selected so no trials for this patient pin
@@ -1719,10 +1710,10 @@ public class ReachService implements HealService {
 						HashMap<String, Integer> resetDateMap = this.getModuleAndDay(patientScheduleJSON, resetDate);
 
 						if (resetDateMap != null && resetDateMap.size() > 0) {
-							if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-								resetModule = resetDateMap.get(this.MODULE);
-							if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-								resetDay = resetDateMap.get(this.DAY);
+							if (map.containsKey(MODULE) && map.get(MODULE) != null)
+								resetModule = resetDateMap.get(MODULE);
+							if (map.containsKey(DAY) && map.get(DAY) != null)
+								resetDay = resetDateMap.get(DAY);
 						}
 
 						if (resetModule == -1) {
@@ -1856,12 +1847,12 @@ public class ReachService implements HealService {
 			// create method  to get module and day of module - done
 			HashMap<String, Integer> map = this.getModuleAndDay(patientScheduleJSON,today);
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 			} else {
 				return new SUDSActivitiesWrapper() ;
 			}
@@ -1909,12 +1900,12 @@ public class ReachService implements HealService {
 			HashMap<String, Integer> map = this.getModuleAndDay(patientScheduleJSON,today);
 
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 			}
 
 			Integer resetModule=-1, resetDay=0;
@@ -1947,10 +1938,10 @@ public class ReachService implements HealService {
 				}
 				HashMap<String, Integer> resetDateMap = this.getModuleAndDay(patientScheduleJSON, resetDate);
 				if (resetDateMap != null && resetDateMap.size() > 0) {
-					if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-						resetModule = resetDateMap.get(this.MODULE);
-					if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-						resetDay = resetDateMap.get(this.DAY);
+					if (map.containsKey(MODULE) && map.get(MODULE) != null)
+						resetModule = resetDateMap.get(MODULE);
+					if (map.containsKey(DAY) && map.get(DAY) != null)
+						resetDay = resetDateMap.get(DAY);
 				}
 
 				if(resetCount == -1) {
@@ -2021,12 +2012,12 @@ public class ReachService implements HealService {
 			HashMap<String,Integer> map = getModuleAndDay(patientScheduleJSON, today);
 			Integer module =-1,dayOfModule=-1,moduleLen=0;
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 
 			}
 			else {
@@ -2066,12 +2057,12 @@ public class ReachService implements HealService {
 			HashMap<String,Integer> map = getModuleAndDay(patientScheduleJSON, today);
 			Integer module =-1,dayOfModule=-1,moduleLen=0;
 			if(map != null && map.size() > 0) {
-				if (map.containsKey(this.MODULE) && map.get(this.MODULE) != null)
-					module = map.get(this.MODULE);
-				if (map.containsKey(this.DAY) && map.get(this.DAY) != null)
-					dayOfModule = map.get(this.DAY);
-				if (map.containsKey(this.MODULE_LENGTH) && map.get(this.MODULE_LENGTH) != null)
-					moduleLen=map.get(this.MODULE_LENGTH);
+				if (map.containsKey(MODULE) && map.get(MODULE) != null)
+					module = map.get(MODULE);
+				if (map.containsKey(DAY) && map.get(DAY) != null)
+					dayOfModule = map.get(DAY);
+				if (map.containsKey(MODULE_LENGTH) && map.get(MODULE_LENGTH) != null)
+					moduleLen=map.get(MODULE_LENGTH);
 
 			}
 			else {

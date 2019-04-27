@@ -16,12 +16,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
+import java.text.NumberFormat;
 import java.util.List;
 
 @Path("/activities")
@@ -464,6 +463,49 @@ public class ActivityResource {
 	@GET
 	@Path("/ping")
 	public Response ping() {
+		Runtime runtime = Runtime.getRuntime();
+
+		NumberFormat format = NumberFormat.getInstance();
+
+		StringBuilder sb = new StringBuilder();
+		long maxMemory = runtime.maxMemory();
+		long allocatedMemory = runtime.totalMemory();
+		long freeMemory = runtime.freeMemory();
+		
+		int availProcessor = runtime.availableProcessors();
+
+		sb.append("free memory: " + format.format(freeMemory / 1024) + "\n");
+		sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\n");
+		sb.append("max memory: " + format.format(maxMemory / 1024) + "\n");
+		sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
+		sb.append("Available CPU: " + availProcessor + "\n");
+		
+		
+		System.out.println("Memory Status Before finalize : .-----------------------------");
+		System.out.println(sb.toString());
+		System.out.println("---------------------------------------------------------------");
+		
+		runtime.runFinalization();
+		
+		StringBuilder sb1 = new StringBuilder();
+		 maxMemory = runtime.maxMemory();
+		 allocatedMemory = runtime.totalMemory();
+		 freeMemory = runtime.freeMemory();
+		
+		 availProcessor = runtime.availableProcessors();
+
+		sb1.append("free memory: " + format.format(freeMemory / 1024) + "\n");
+		sb1.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\n");
+		sb1.append("max memory: " + format.format(maxMemory / 1024) + "\n");
+		sb1.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
+		sb1.append("Available CPU: " + availProcessor + "\n");
+		
+		
+		System.out.println("Memory Status After finalize : .-----------------------------");
+		System.out.println(sb1.toString());
+		System.out.println("---------------------------------------------------------------");
+
+		
 		return Response.status(Response.Status.OK).build();
 
 	}
